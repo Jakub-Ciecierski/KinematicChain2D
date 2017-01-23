@@ -15,7 +15,6 @@ class ConfigurationSpace;
 
 class RobotScene {
 public:
-
     RobotScene(std::shared_ptr<ifx::SceneContainer> scene_);
     ~RobotScene();
 
@@ -23,15 +22,22 @@ public:
         return configuration_space_;
     }
     std::shared_ptr<Robot> robot(){return robot_;}
+    std::shared_ptr<ifx::GameObject> effector_position(){
+        return effector_position_;}
 
     void Update();
 
     void AddObstacle();
 
     void ComputeConfigurationSpace();
+
 private:
+    void UpdateObstacles();
     void SynchronizeRemovedObstacles();
+
     void Apply2DConstaints();
+
+    void SolveConstraints();
 
     std::shared_ptr<ConfigurationSpace> configuration_space_;
     std::shared_ptr<Robot> robot_;

@@ -49,7 +49,8 @@ public:
             const glm::vec2& p2,
             const std::vector<std::shared_ptr<Obstacle>>& obstacles);
 
-    void SolveDirect();
+    void SolveDirectAndUpdate();
+    void SolveDirectAndUpdate(float alpha1, float alpha2);
     RobotSolution SolveDirect(float alpha1, float alpha2);
 
     void SolveConstrains(

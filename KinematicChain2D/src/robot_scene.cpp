@@ -26,17 +26,9 @@ RobotScene::RobotScene(std::shared_ptr<ifx::SceneContainer> scene) :
 RobotScene::~RobotScene(){}
 
 void RobotScene::Update(){
-    SynchronizeRemovedObstacles();
-
-    for(auto& obstacle : obstacles_)
-        obstacle->Update();
-
+    UpdateObstacles();
     Apply2DConstaints();
-
-    auto& effector_position = effector_position_->getPosition();
-    glm::vec2 position(effector_position.x, effector_position.y);
-
-    robot_->SolveInverseWithConstraints(position, obstacles_);
+    SolveConstraints();
 }
 
 void RobotScene::AddObstacle(){
@@ -64,6 +56,12 @@ void RobotScene::AddObstacle(){
     scene_->Add(obstacle->game_object);
 }
 
+void RobotScene::UpdateObstacles(){
+    SynchronizeRemovedObstacles();
+    for(auto& obstacle : obstacles_)
+        obstacle->Update();
+}
+
 void RobotScene::SynchronizeRemovedObstacles(){
     std::vector<std::shared_ptr<Obstacle>> keep_obstacles;
     for(auto& obstacle : obstacles_){
@@ -83,4 +81,12 @@ void RobotScene::Apply2DConstaints(){
 
 void RobotScene::ComputeConfigurationSpace(){
     configuration_space_->Compute(obstacles_, robot_);
+}
+
+void RobotScene::SolveConstraints(){
+    auto& effector_position = effector_position_->getPosition();
+    glm::vec2 position(effector_position.x, effector_position.y);
+    robot_->SolveInverseWithConstraints(position, obstacles_);
+
+    //robot_->SolveDirectAndUpdate();
 }

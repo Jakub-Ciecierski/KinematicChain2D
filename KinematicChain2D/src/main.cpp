@@ -30,7 +30,6 @@
 #include <physics/rigid_bodies/fracture_rigid_body.h>
 
 #include <robot_simulation.h>
-#include <factory/hodograph_factory.h>
 
 std::shared_ptr<ifx::LightDirectional> CreateDirectionalLight();
 std::shared_ptr<ifx::LightSpotlight> CreateSpotLight();

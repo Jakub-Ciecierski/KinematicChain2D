@@ -21,8 +21,6 @@ Robot::Robot(std::shared_ptr<ifx::SceneContainer> scene) :
     solution2_.p2 = glm::vec2(0,2);
     solution2_.alpha1 = 0;
     solution2_.alpha2 = 0;
-
-    SolveDirect();
 }
 
 Robot::~Robot(){}
@@ -95,11 +93,44 @@ void Robot::SolveMiddlePoint(const glm::vec2& p0,
 
     // compute alphas
     glm::vec2 y_axis(0,1);
+    glm::vec2 direction1_p1 = glm::normalize(p1.p1 - p0);
+    glm::vec2 direction1_p2 = glm::normalize(p2 - p1.p1);
+
+    float sina1 = (direction1_p1.x);
+    float cosa1 = (direction1_p1.y);
+    solution1_.alpha1 = atan2(sina1, cosa1);
+
+    float sina2 = (direction1_p2.x);
+    float cosa2 = (direction1_p2.y);
+    solution1_.alpha2 = atan2(sina2, cosa2);
+
+
+    glm::vec2 direction2_p1 = glm::normalize(p1.p2 - p0);
+    glm::vec2 direction2_p2 = glm::normalize(p2 - p1.p2);
+    float sina2_1 = (direction2_p1.x);
+    float cosa2_1 = (direction2_p1.y);
+    solution2_.alpha1 = atan2(sina2_1, cosa2_1);
+
+    float sina2_2 = (direction2_p2.x);
+    float cosa2_2 = (direction2_p2.y);
+    solution2_.alpha2 = atan2(sina2_2, cosa2_2);
+
+    /*
     solution1_.alpha1 = acos(glm::dot(glm::normalize(p1.p1 - p0), y_axis));
     solution1_.alpha2 = acos(glm::dot(glm::normalize(p2 - p1.p1), y_axis));
 
     solution2_.alpha1 = acos(glm::dot(glm::normalize(p1.p2 - p0), y_axis));
     solution2_.alpha2 = acos(glm::dot(glm::normalize(p2 - p1.p2), y_axis));
+*/
+
+    if(solution1_.alpha1 < 0)
+        solution1_.alpha1 += 2*M_PI;
+    if(solution1_.alpha2 < 0)
+        solution1_.alpha2 += 2*M_PI;
+    if(solution2_.alpha1 < 0)
+        solution2_.alpha1 += 2*M_PI;
+    if(solution2_.alpha2 < 0)
+        solution2_.alpha2 += 2*M_PI;
 
     solution1_.alpha1 = glm::degrees(solution1_.alpha1);
     solution1_.alpha2 = glm::degrees(solution1_.alpha2);
@@ -127,16 +158,26 @@ void Robot::SolveConstrains(
     }
 }
 
-void Robot::SolveDirect(){
+void Robot::SolveDirectAndUpdate(){
+    SolveDirectAndUpdate(solution1_.alpha1, solution1_.alpha2);
+}
+
+void Robot::SolveDirectAndUpdate(float alpha1, float alpha2){
     solution1_.p1.x
-            = solution1_.p0.x + (l1_ * sin(glm::radians(solution1_.alpha1)));
+            = solution1_.p0.x + (l1_ * sin(glm::radians(alpha1)));
     solution1_.p1.y
-            = solution1_.p0.y + (l1_ * cos(glm::radians(solution1_.alpha1)));
+            = solution1_.p0.y + (l1_ * cos(glm::radians(alpha1)));
 
     solution1_.p2.x
-            = solution1_.p1.x + (l1_ * sin(glm::radians(solution1_.alpha2)));
+            = solution1_.p1.x + (l2_ * sin(glm::radians(alpha2)));
     solution1_.p2.y
-            = solution1_.p1.y + (l1_ * cos(glm::radians(solution1_.alpha2)));
+            = solution1_.p1.y + (l2_ * cos(glm::radians(alpha2)));
+
+    solution1_.alpha1 = alpha1;
+    solution1_.alpha2 = alpha2;
+    solution1_.available = true;
+
+    solution2_ = solution1_;
 
     UpdateGameObject();
 }
@@ -151,9 +192,9 @@ RobotSolution Robot::SolveDirect(float alpha1, float alpha2){
             = solution.p0.y + (l1_ * cos(glm::radians(alpha1)));
 
     solution.p2.x
-            = solution.p1.x + (l1_ * sin(glm::radians(alpha2)));
+            = solution.p1.x + (l2_ * sin(glm::radians(alpha2)));
     solution.p2.y
-            = solution.p1.y + (l1_ * cos(glm::radians(alpha2)));
+            = solution.p1.y + (l2_ * cos(glm::radians(alpha2)));
 
     return solution;
 }
@@ -168,8 +209,15 @@ void Robot::UpdateGameObject(){
     glm::vec3 p1_2 = glm::vec3(solution2_.p1.x, solution2_.p1.y, 0);
     glm::vec3 p2 = glm::vec3(solution1_.p2.x, solution1_.p2.y, 0);
 
-    const glm::vec3 color1(0, 255, 0);
-    const glm::vec3 color2(0, 0, 255);
+    glm::vec3 color1(0, 255, 0);
+    glm::vec3 color2(0, 0, 255);
+
+    if(!solution1_.available){
+        color1 = glm::vec3(120, 0, 0);
+    }
+    if(!solution2_.available){
+        color2 = glm::vec3(120, 0, 0);
+    }
 
     auto render_object1_1 = ifx::RenderObjectFactory().CreateLine(p0, p1_1,
                                                                 color1);
@@ -180,7 +228,7 @@ void Robot::UpdateGameObject(){
                                                                 color2);
     auto render_object2_2 = ifx::RenderObjectFactory().CreateLine(p1_2, p2,
                                                                 color2);
-
+/*
     if(solution1_.available){
         game_object_->Add(render_object1_1);
         game_object_->Add(render_object1_2);
@@ -190,6 +238,14 @@ void Robot::UpdateGameObject(){
         game_object_->Add(render_object2_1);
         game_object_->Add(render_object2_2);
     }
+*/
+
+
+    game_object_->Add(render_object1_1);
+    game_object_->Add(render_object1_2);
+
+    game_object_->Add(render_object2_1);
+    game_object_->Add(render_object2_2);
 
     scene_->Add(game_object_);
 }

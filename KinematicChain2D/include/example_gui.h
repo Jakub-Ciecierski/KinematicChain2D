@@ -6,6 +6,8 @@
 #include <memory>
 
 class RobotSimulation;
+class RobotSolution;
+struct ImVec4;
 
 namespace ifx{
 class EngineGUI;
@@ -24,9 +26,21 @@ public:
 
     virtual void Render() override;
 private:
+    void RenderWindow();
+
+    void RenderMode();
+
     void RenderEditorMode();
     void RenderObstacle();
     void RenderRobotProperties();
+
+    void RenderPathFinder();
+    void RenderSolutions();
+    void RenderSetSolution(RobotSolution& solution,
+                           ImVec4& color, std::string text,
+                           int start_or_end);
+    void RenderComputePath();
+    void RenderChosenSolutions();
 
     void RenderConfigurationSpace();
     void RenderConfigurationSpacePlot();

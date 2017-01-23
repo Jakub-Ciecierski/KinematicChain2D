@@ -7,6 +7,7 @@
 
 class Obstacle;
 class Robot;
+struct Node;
 
 namespace ifx{
 class Texture2D;
@@ -21,11 +22,14 @@ public:
     ConfigurationSpace();
     ~ConfigurationSpace();
 
-    const std::vector<std::vector<int>>& data(){return data_;}
+    std::vector<std::vector<int>>& data(){return data_;}
     std::shared_ptr<ifx::Texture2D> texture(){return texture_;}
 
     void Compute(const std::vector<std::shared_ptr<Obstacle>>& obstacles,
                  std::shared_ptr<Robot> robot);
+
+    void UpdateTexture(std::vector<Node> path);
+
 private:
     void InitData();
 
